@@ -5,6 +5,8 @@ import (
 	"net"
 	"redis/internal/engine"
 	"redis/internal/storage"
+	"redis/resp"
+	"strings"
 	"sync"
 )
 
@@ -31,7 +33,8 @@ func HandleConnection(conn net.Conn, wg *sync.WaitGroup, s *storage.Store) {
 	for {
 		buff := make([]byte, 1024)
 		count, _ := conn.Read(buff)
-		result := string(buff[:count])
+		data := string(buff[:count])
+		result, _ := resp.Parse(strings.NewReader(data))
 		cmd, err := engine.Parse(result)
 		if err != nil {
 			fmt.Printf("%#v\n", result)
@@ -40,13 +43,21 @@ func HandleConnection(conn net.Conn, wg *sync.WaitGroup, s *storage.Store) {
 		}
 		fmt.Println("command : ", cmd)
 		switch cmd.Name {
+		case "PING":
+			conn.Write([]byte("PONG\n"))
 		case "SET":
 			s.Set(cmd.Args[0], cmd.Args[1])
 			conn.Write([]byte("ok\n"))
 		case "GET":
 			value, _ := s.Get(cmd.Args[0])
 			conn.Write([]byte(value + "\n"))
+		case "DEL":
+			ok := s.Delete(cmd.Args[0])
+			if ok {
+				conn.Write([]byte("true\n"))
+			} else {
+				conn.Write([]byte("false\n"))
+			}
 		}
-
 	}
 }

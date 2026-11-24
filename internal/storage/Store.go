@@ -32,9 +32,9 @@ func (s *Store) Get(key string) (string, bool) {
 func (s *Store) Delete(key string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	Value, ok := s.data[key]
-	delete(s.data, Value)
-	return ok
+	delete(s.data, key)
+	_, ok := s.data[key]
+	return !ok
 }
 
 func (s *Store) Exists(key string) bool {
