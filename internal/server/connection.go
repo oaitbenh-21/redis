@@ -13,7 +13,10 @@ func HandleConnection(conn net.Conn, wg *sync.WaitGroup, s *storage.Store) {
 	defer wg.Done()
 	for {
 		buff := make([]byte, 1024)
-		count, _ := conn.Read(buff)
+		count, err := conn.Read(buff)
+		if err != nil {
+			return
+		}
 		data := string(buff[:count])
 		result, _ := resp.Parse(strings.NewReader(data))
 		cmd, _ := engine.Parse(result)
