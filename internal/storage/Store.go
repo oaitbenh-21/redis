@@ -23,7 +23,6 @@ func (s *Store) Set(key, value string) {
 func (s *Store) Get(key string) (string, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	println(s.data[key])
 	Value, ok := s.data[key]
 	return Value, ok
 
