@@ -1,4 +1,4 @@
-package Store
+package storage
 
 import "sync"
 
